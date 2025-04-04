@@ -37,9 +37,11 @@ function SignIn() {
     };
 
     useEffect(() => {
-        if (isAuthenticated)
-            navigate("/",{ replace: true });
-    }, [isAuthenticated, user])
+        if (isAuthenticated) {
+            navigate("/", { replace: true });
+        }
+    }, [isAuthenticated, user, navigate]);
+    
 
     return (
         <div className='sign-container'>

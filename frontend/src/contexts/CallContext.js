@@ -405,7 +405,7 @@ const CallContext = ({ children }) => {
       }
       const { callerId, receiverId, callType } = callLogsData;
       const response = await axios.post(
-        "http://localhost:5000/call/callhistories/call-logs",
+        "https://audio-video-calling-app-1qsg.onrender.com/call/callhistories/call-logs",
         {
           callerId,
           receiverId,
@@ -429,7 +429,7 @@ const CallContext = ({ children }) => {
         return;
       }
       const response = await axios.patch(
-        "http://localhost:5000/call/update-call-logs",
+        "https://audio-video-calling-app-1qsg.onrender.com/call/update-call-logs",
         {
           id: callId,
           status: callStatus,

@@ -110,7 +110,7 @@ function Forgot() {
     if (email) {
       try {
         const response = await fetch(
-          "http://localhost:5000/users/auth/sendResetPassOTP",
+          "https://audio-video-calling-app-1qsg.onrender.com/users/auth/sendResetPassOTP",
           {
             method: "POST",
             headers: {

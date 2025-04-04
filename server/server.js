@@ -71,9 +71,7 @@ const io = new Server(server, {
 
 const activeCalls = new Map();
 const peerServer = ExpressPeerServer(server, {
-  debug: true,
-  host: "localhost",
-  port: "5000",
+  debug: false,
   path: "/",
 });
 
