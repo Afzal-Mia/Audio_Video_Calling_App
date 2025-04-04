@@ -28,7 +28,7 @@ export const CallLogsContext = ({ children }) => {
     try {
       const userId = user.userId;
       const response = await axios.get(
-        `http://localhost:5000/call/fetch-call-logs?userId=${userId}`
+        `https://audio-video-calling-app-tz0q.onrender.com/call/fetch-call-logs?userId=${userId}`
       );
       setCallHistory(response.data);
     } catch (err) {
@@ -38,7 +38,7 @@ export const CallLogsContext = ({ children }) => {
   const deleteCallLog = async (callId) => {
     try {
       const userId = user.userId;
-      await axios.delete(`http://localhost:5000/call/delete-call-logs/delete/${callId}`, {
+      await axios.delete(`https://audio-video-calling-app-tz0q.onrender.com/call/delete-call-logs/delete/${callId}`, {
         data: { userId },
       });
       fetchCallHistory();
@@ -51,7 +51,7 @@ export const CallLogsContext = ({ children }) => {
     try {
       const userId = user.userId;
 
-      await axios.delete(`http://localhost:5000/call/delete-call-logs/delete-all`, { data: { userId } });
+      await axios.delete(`https://audio-video-calling-app-tz0q.onrender.com/call/delete-call-logs/delete-all`, { data: { userId } });
       fetchCallHistory();
     } catch (error) {
       console.error("Error deleting all call logs:", error);

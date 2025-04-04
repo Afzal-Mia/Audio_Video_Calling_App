@@ -52,17 +52,18 @@ const Call = () => {
       if (user?.userId && selectedCallLogs?.recipient?.userId) {
         const currentUserId = user.userId;
         const selectedUserId = selectedCallLogs.recipient.userId;
-
+  
         const userBlockedList = await fetchBlockedUsers(currentUserId);
         const selectedUserBlockedList = await fetchBlockedUsers(selectedUserId);
-
-        setIsblockedByMe(userBlockedList.includes(selectedUserId));
+  
+        // setIsblockedByMe(userBlockedList.includes(selectedUserId));
         setIsUserBlocked(selectedUserBlockedList.includes(currentUserId));
       }
     };
-
+  
     fetchBlockedStatus();
-  }, [user, selectedCallLogs]);
+  }, [user, selectedCallLogs, fetchBlockedUsers]);
+  
 
   useEffect(() => {
     fetchCallHistory();

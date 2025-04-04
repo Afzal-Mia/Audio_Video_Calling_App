@@ -81,7 +81,7 @@
     .then(() => console.log("MongoDB connected..."))
     .catch((err) => console.error("MongoDB connection error:", err));
 
-  const BASE_URL ="http://localhost:5000/chat";
+  const BASE_URL ="https://audio-video-calling-app-tz0q.onrender.com/chat";
 
   const storage = multer.diskStorage({
     destination: function (req, file, cb) {

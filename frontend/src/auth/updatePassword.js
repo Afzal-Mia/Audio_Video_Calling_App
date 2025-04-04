@@ -28,17 +28,14 @@ function UpdatePassword() {
     const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
 
     useEffect(() => {
-       
         if (isAuthenticated) {
-            navigate('/',{ replace: true })
-
+            navigate('/', { replace: true });
         } else {
-
+            if (!email) {
+                navigate('/forgot', { replace: true });
+            }
         }
-        if (!email) {
-            navigate('/forgot',{ replace: true })
-        }
-    },[isAuthenticated]);
+    }, [isAuthenticated, email, navigate]);
 
    
  
@@ -81,7 +78,7 @@ function UpdatePassword() {
         setIsLoading(true);
         if (uData.email && uData.password) {
             try {
-                const response = await fetch('http://localhost:5000/users/auth/updatePass', {
+                const response = await fetch('https://audio-video-calling-app-tz0q.onrender.com/users/auth/updatePass', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

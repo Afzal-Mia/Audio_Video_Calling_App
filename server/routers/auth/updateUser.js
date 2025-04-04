@@ -5,7 +5,7 @@ const fs = require('fs');
 const User = require('../../Models/user');
 
 const router = express.Router();
-const BASE_URL = 'http://localhost:5000/profiles'
+const BASE_URL = 'https://audio-video-calling-app-tz0q.onrender.com/profiles'
 
 
 const storage = multer.diskStorage({

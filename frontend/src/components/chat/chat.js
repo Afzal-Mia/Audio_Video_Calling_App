@@ -216,7 +216,7 @@ const Chat = () => {
     formData.append("file", selectedFile);
 
     try {
-      const res = await fetch("http://localhost:5000/upload-file", {
+      const res = await fetch("https://audio-video-calling-app-tz0q.onrender.com/upload-file", {
         method: "POST",
         body: formData,
       });
@@ -359,7 +359,7 @@ const Chat = () => {
   const saveChatList = async (userId, chatPartnerEmail, lastMessage) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/GChat/chatlists/add-chatlist",
+        "https://audio-video-calling-app-tz0q.onrender.com/GChat/chatlists/add-chatlist",
         {
           method: "POST",
           headers: {
@@ -690,6 +690,7 @@ const Chat = () => {
             <img
               className="selected-user-profile-img"
               src={selectedUser ? selectedUser.profile : userIcon}
+              alt="user-profile"
               onError={() => setImageError(true)}
             />
           ) : (
