@@ -216,7 +216,7 @@ const Chat = () => {
     formData.append("file", selectedFile);
 
     try {
-      const res = await fetch("https://audio-video-calling-app-1qsg.onrender.com/upload-file", {
+      const res = await fetch("http://localhost:5000/upload-file", {
         method: "POST",
         body: formData,
       });
@@ -359,7 +359,7 @@ const Chat = () => {
   const saveChatList = async (userId, chatPartnerEmail, lastMessage) => {
     try {
       const response = await fetch(
-        "https://audio-video-calling-app-1qsg.onrender.com/GChat/chatlists/add-chatlist",
+        "http://localhost:5000/GChat/chatlists/add-chatlist",
         {
           method: "POST",
           headers: {

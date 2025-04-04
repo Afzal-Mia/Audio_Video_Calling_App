@@ -17,7 +17,7 @@ const chatContext = createContext(null);
 let socket;
 const getSocket = () => {
   if (!socket) {
-    socket = io("https://audio-video-calling-app-1qsg.onrender.com");
+    socket = io("http://localhost:5000");
   }
   return socket;
 };
@@ -69,7 +69,7 @@ const ChatContext = ({ children }) => {
     if (user.userId) {
       try {
         const response = await fetch(
-          `https://audio-video-calling-app-1qsg.onrender.com/users/chatlists/chat-list/${user.userId}`
+          `http://localhost:5000/users/chatlists/chat-list/${user.userId}`
         );
         const data = await response.json();
 
@@ -85,7 +85,7 @@ const ChatContext = ({ children }) => {
 
   const markMessagesAsSeen = async (chatId) => {
     try {
-      await axios.put(`https://audio-video-calling-app-1qsg.onrender.com/users/chats/mark-seen/${chatId}`, {
+      await axios.put(`http://localhost:5000/users/chats/mark-seen/${chatId}`, {
         currentUserId,
       });
 
@@ -116,7 +116,7 @@ const ChatContext = ({ children }) => {
     if (peerId) {
       try {
         const response = await fetch(
-          `https://audio-video-calling-app-1qsg.onrender.com/users/chats/${user.userId}/${peerId}`
+          `http://localhost:5000/users/chats/${user.userId}/${peerId}`
         );
         if (!response.ok) throw new Error("Failed to fetch messages");
 
@@ -134,7 +134,7 @@ const ChatContext = ({ children }) => {
     if (messageId && senderId) {
       try {
         const response = await fetch(
-          `https://audio-video-calling-app-1qsg.onrender.com/users/chats/delete-message/${messageId}?senderId=${senderId}`,
+          `http://localhost:5000/users/chats/delete-message/${messageId}?senderId=${senderId}`,
           {
             method: "DELETE",
           }
@@ -156,7 +156,7 @@ const ChatContext = ({ children }) => {
       const userId = currentUserId;
       try {
         const response = await fetch(
-          `https://audio-video-calling-app-1qsg.onrender.com/users/chats/delete-chat/${chatId}`,
+          `http://localhost:5000/users/chats/delete-chat/${chatId}`,
           {
             method: "DELETE",
             headers: {
@@ -182,7 +182,7 @@ const ChatContext = ({ children }) => {
     if (selectedChatUserId) {
       try {
         const response = await fetch(
-          `https://audio-video-calling-app-1qsg.onrender.com/users/auth/block-user/${userId}`,
+          `http://localhost:5000/users/auth/block-user/${userId}`,
           {
             method: "POST",
             headers: {
@@ -216,7 +216,7 @@ const ChatContext = ({ children }) => {
     }
     try {
       const response = await fetch(
-        `https://audio-video-calling-app-1qsg.onrender.com/users/auth/blocked-users/${userId}`
+        `http://localhost:5000/users/auth/blocked-users/${userId}`
       );
       if (!response.ok) throw new Error("Failed to fetch blocked users");
       const data = await response.json();
@@ -240,7 +240,7 @@ const ChatContext = ({ children }) => {
       setIsRequesting(true);
       try {
         const response = await fetch(
-          "https://audio-video-calling-app-1qsg.onrender.com/users/send-call-back-request",
+          "http://localhost:5000/users/send-call-back-request",
           {
             method: "POST",
             headers: {

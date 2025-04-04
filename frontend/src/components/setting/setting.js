@@ -99,7 +99,7 @@ const Setting = () => {
       try {
         const email = newEmail;
         const response = await fetch(
-          "https://audio-video-calling-app-1qsg.onrender.com/users/auth/sendOTP",
+          "http://localhost:5000/users/auth/sendOTP",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -170,7 +170,7 @@ const Setting = () => {
 
     try {
       const response = await axios.patch(
-        "https://audio-video-calling-app-1qsg.onrender.com/users/auth/update-user",
+        "http://localhost:5000/users/auth/update-user",
         formData,
         {
           headers: {

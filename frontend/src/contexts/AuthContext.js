@@ -61,7 +61,7 @@ export const AuthProvider = ({ children }) => {
 
     setErrors({});
     try {
-      const response = await fetch("https://audio-video-calling-app-1qsg.onrender.com/users/auth/sendOTP", {
+      const response = await fetch("http://localhost:5000/users/auth/sendOTP", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email }),
@@ -149,7 +149,7 @@ export const AuthProvider = ({ children }) => {
 
     try {
       const response = await fetch(
-        "https://audio-video-calling-app-1qsg.onrender.com/users/auth/register",
+        "http://localhost:5000/users/auth/register",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -251,7 +251,7 @@ export const AuthProvider = ({ children }) => {
     setIsLoading(true);
     if (uData.email && uData.password) {
       try {
-        const response = await fetch("https://audio-video-calling-app-1qsg.onrender.com/users/auth/login", {
+        const response = await fetch("http://localhost:5000/users/auth/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
