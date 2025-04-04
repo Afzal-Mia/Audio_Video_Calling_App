@@ -84,7 +84,7 @@ mongoose
   .then(() => console.log("MongoDB connected..."))
   .catch((err) => console.error("MongoDB connection error:", err));
 
-const BASE_URL = "http://localhost:5000/chat";
+const BASE_URL =`${process.env.BASE_URL}/chat`;
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -329,6 +329,9 @@ async function updateUserList(userId, peerId, lastMessage) {
     console.error("Error updating user list:", err);
   }
 }
+app.get("/",(req,res)=>{
+  res.send("Your server  is working ")
+})
 const PORT=process.env.PORT;
 server.listen(PORT, () => {
   console.log(`Server listening on port http://localhost:${PORT}`);
