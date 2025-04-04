@@ -536,6 +536,7 @@ const Chat = () => {
               }
             )
           : null;
+          
 
       return (
         <React.Fragment key={index}>
@@ -690,7 +691,7 @@ const Chat = () => {
             <img
               className="selected-user-profile-img"
               src={selectedUser ? selectedUser.profile : userIcon}
-              alt="user-profile"
+              alt="user"
               onError={() => setImageError(true)}
             />
           ) : (
