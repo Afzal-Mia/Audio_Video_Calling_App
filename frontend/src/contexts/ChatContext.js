@@ -287,7 +287,7 @@ const ChatContext = ({ children }) => {
     return () => {
       socket.off("notifyBlocked", notifyBlockedUser);
     };
-  }, [socket, selectedChatUserId, currentUserId,]);
+  }, [socket, selectedChatUserId, currentUserId]);
 
   useEffect(() => {
     const fetchBlockedStatus = async () => {
