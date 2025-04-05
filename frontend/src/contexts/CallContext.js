@@ -1,10 +1,4 @@
-import React, {
-  useContext,
-  createContext,
-  useEffect,
-  useState,
-  useRef,
-} from "react";
+import React, { useContext, createContext, useEffect, useState, useRef } from "react";
 import Peer from "peerjs";
 import { useChat } from "./ChatContext";
 import { useAuth } from "./AuthContext";
@@ -12,12 +6,13 @@ import { useToast } from "./ToastContext";
 import useRingTone from "../components/playRingtone";
 import axios from "axios";
 import { useCallLogs } from "./CallLogsContext";
+
 const context = createContext(null);
 
 const CallContext = ({ children }) => {
   const { user } = useAuth();
   const { socket, selectedChatUserId } = useChat();
-  const { notifySuccess, notifyError, notifyWarning } = useToast();
+  const { notifySuccess, notifyError } = useToast();
   const { fetchCallHistory } = useCallLogs();
 
   // State variables
@@ -40,7 +35,7 @@ const CallContext = ({ children }) => {
   const [callId, setCallId] = useState("");
   const [callStatus, setCallStatus] = useState("");
   const [callEndAt, setCallEndAt] = useState("");
-  const [recipientUser, setRecipientUser]=useState({});
+  const [recipientUser, setRecipientUser] = useState({});
 
   // Refs for streaming and timers
   const currentStream = useRef(null);
@@ -58,10 +53,12 @@ const CallContext = ({ children }) => {
 
       peer.on("open", setMyPeerId);
 
-      peer.on("call", setIncomingCall);
+      // Handle incoming call properly
+      peer.on("call", (call) => {
+        setIncomingCall(call); // Store the call object directly
+      });
 
       const handleCallInvitation = ({ from, name, profile, callType }) => {
-        setIncomingCall({ from });
         setPlayRingtone(true);
         setCallNotAnswered(false);
         setIsCalling(false);
@@ -113,20 +110,13 @@ const CallContext = ({ children }) => {
       socket.on("call-rejected", handleCallRejected);
       socket.on("call-not-answered", handleCallNotAnswered);
       socket.on("call-ended", handleCallEnded);
-
       socket.on("call-accepted", () => {
         setIsRinging(false);
         fetchCallHistory();
       });
+      socket.on("video-status", ({ status }) => setVideoStatusOfPartner(status));
+      socket.on("audio-status", ({ status }) => setAudioStatusOfPartner(status));
 
-      socket.on("video-status", ({ status }) =>
-        setVideoStatusOfPartner(status)
-      );
-      socket.on("audio-status", ({ status }) =>
-        setAudioStatusOfPartner(status)
-      );
-
-      // Cleanup on component unmount
       return () => {
         peer.destroy();
         socket.off("call-invitation", handleCallInvitation);
@@ -137,7 +127,6 @@ const CallContext = ({ children }) => {
         socket.off("call-accepted");
         socket.off("video-status");
         socket.off("audio-status");
-        notifySuccess("");
       };
     }
   }, [user, socket]);
@@ -146,44 +135,44 @@ const CallContext = ({ children }) => {
     try {
       clearTimeout(timeOut.current);
 
-      if (!incomingCall) return;
+      if (!incomingCall || typeof incomingCall.answer !== "function") {
+        console.error("No valid incoming call to answer:", incomingCall);
+        notifyError("No incoming call available to accept.");
+        return;
+      }
 
       setPlayRingtone(false);
       setCurrentCallType(callType);
 
-      // Ensure currentStream is set up
       if (!currentStream.current) {
         const mediaConstraints = {
           video: callType === "video",
           audio: true,
         };
-        currentStream.current = await navigator.mediaDevices.getUserMedia(
-          mediaConstraints
-        );
+        currentStream.current = await navigator.mediaDevices.getUserMedia(mediaConstraints);
       }
 
+      // Answer the call with the local stream
       incomingCall.answer(currentStream.current);
-      setIncomingCall(null);
+      setIncomingCall(null); // Clear the incoming call after answering
 
-      // Handle remote stream
       incomingCall.on("stream", (remoteStream) => {
         peerStream.current = remoteStream;
         setIsCallActive(true);
         setIsCalling(true);
         setCallNotAnswered(false);
+        startCallDuration(); // Start the call timer when the stream is received
       });
 
-      // Notify the server
-      socket.emit("call-accepted", { from: callerDetails.userId, callType });
-      fetchCallHistory();
-
-      // Handle call closure
       incomingCall.on("close", () => {
         handleHangUp(myPeerId);
         stopCallTimer();
       });
+
+      socket.emit("call-accepted", { from: callerDetails.userId, callType });
+      fetchCallHistory();
     } catch (err) {
-      console.error("Error in acceptCall:", err.message, err);
+      console.error("Error in acceptCall:", err);
       if (["NotAllowedError", "NotFoundError"].includes(err.name)) {
         alert("Please allow access to camera and microphone.");
       }
@@ -200,10 +189,8 @@ const CallContext = ({ children }) => {
         setCallEndAt(currentDate);
       } else {
         setCallStatus("missed");
-        
       }
     }
-    // Notify the remote peer about the hang-up
     socket.emit("call-ended", { from: id, to });
     removeStreaming();
     setIsCallActive(false);
@@ -212,7 +199,6 @@ const CallContext = ({ children }) => {
     setIncomingCall(null);
     stopCallTimer();
     clearTimeout(timeOut.current);
-    // notifySuccess("Call ended");
   };
 
   const rejectCall = () => {
@@ -222,20 +208,15 @@ const CallContext = ({ children }) => {
     clearTimeout(timeOut.current);
     socket.emit("call-rejected", { from: callerDetails.userId });
     fetchCallHistory();
-
   };
 
   const removeStreaming = () => {
-    // Clear timeout and reset peer stream
     clearTimeout(timeOut.current);
     peerStream.current = null;
-
-    // Stop and release local media tracks
     if (currentStream.current) {
       currentStream.current.getTracks().forEach((track) => track.stop());
       currentStream.current = null;
     }
-    // Reset media and partner statuses
     setAudioEnabled(true);
     setVideoEnabled(true);
     setAudioStatusOfPartner(true);
@@ -252,7 +233,6 @@ const CallContext = ({ children }) => {
         return;
       }
 
-      // Reset call states
       setCallNotAnswered(false);
       setCurrentCallType(callType);
       setAudioEnabled(true);
@@ -265,24 +245,18 @@ const CallContext = ({ children }) => {
       setCallStatus("");
       setCallId("");
 
-      // Stop and clear existing stream
       if (currentStream.current) {
         currentStream.current.getTracks().forEach((track) => track.stop());
         currentStream.current = null;
       }
 
-      // Determine media constraints
       const mediaConstraints = {
         video: callType === "video" && videoEnabled,
         audio: audioEnabled,
       };
 
-      // Acquire a new media stream
-      currentStream.current = await navigator.mediaDevices.getUserMedia(
-        mediaConstraints
-      );
+      currentStream.current = await navigator.mediaDevices.getUserMedia(mediaConstraints);
 
-      // Notify recipient
       socket.emit("call-user", {
         from: myPeerId,
         to: userId,
@@ -293,7 +267,6 @@ const CallContext = ({ children }) => {
         rProfile: profile,
       });
 
-      // Initiate the call
       const call = peerRef.current.call(userId, currentStream.current);
       setIsCalling(true);
       setIsRinging(true);
@@ -305,7 +278,6 @@ const CallContext = ({ children }) => {
       };
       storeCallLogs(callLogsData);
 
-      // Set a timeout for unanswered calls
       timeOut.current = setTimeout(() => {
         if (!isCallActive) {
           socket.emit("call-not-answered", { to: userId });
@@ -315,21 +287,20 @@ const CallContext = ({ children }) => {
         }
       }, 30000);
 
-      // Handle remote stream
       call.on("stream", (remoteStream) => {
         peerStream.current = remoteStream;
         setIsCallActive(true);
         clearTimeout(timeOut.current);
+        startCallDuration();
       });
 
-      // Handle call closure
       call.on("close", () => {
         handleHangUp(myPeerId);
         clearTimeout(timeOut.current);
         stopCallTimer();
       });
     } catch (err) {
-      console.error("Error in initiateCall:", err.message, err);
+      console.error("Error in initiateCall:", err);
       if (["NotAllowedError", "NotFoundError"].includes(err.name)) {
         alert("Please allow access to camera and microphone.");
       }
@@ -338,11 +309,7 @@ const CallContext = ({ children }) => {
 
   const toggleVideo = (id) => {
     if (!currentStream.current) return;
-
-    const to =
-      id === callerDetails.userId
-        ? selectedChatUserId
-        : callerDetails.userId || myPeerId;
+    const to = id === callerDetails.userId ? selectedChatUserId : callerDetails.userId || myPeerId;
     const videoTrack = currentStream.current.getVideoTracks()[0];
     if (videoTrack) {
       videoTrack.enabled = !videoTrack.enabled;
@@ -353,11 +320,7 @@ const CallContext = ({ children }) => {
 
   const toggleAudio = (id) => {
     if (!currentStream.current) return;
-
-    const to =
-      id === callerDetails.userId
-        ? selectedChatUserId
-        : callerDetails.userId || myPeerId;
+    const to = id === callerDetails.userId ? selectedChatUserId : callerDetails.userId || myPeerId;
     const audioTrack = currentStream.current.getAudioTracks()[0];
     if (audioTrack) {
       audioTrack.enabled = !audioTrack.enabled;
@@ -368,11 +331,8 @@ const CallContext = ({ children }) => {
 
   const startCallDuration = () => {
     startTimeRef.current = Date.now();
-
     timerIntervalRef.current = setInterval(() => {
-      const elapsedSeconds = Math.floor(
-        (Date.now() - startTimeRef.current) / 1000
-      );
+      const elapsedSeconds = Math.floor((Date.now() - startTimeRef.current) / 1000);
       const formattedDuration = formatDuration(elapsedSeconds);
       callDurationRef.current = formattedDuration;
       setDisplayDuration(formattedDuration);
@@ -391,58 +351,41 @@ const CallContext = ({ children }) => {
   const formatDuration = (durationInSeconds) => {
     const minutes = Math.floor(durationInSeconds / 60);
     const seconds = durationInSeconds % 60;
-    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(
-      2,
-      "0"
-    )}`;
+    return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   };
 
   const storeCallLogs = async (callLogsData) => {
     try {
       if (!callLogsData) {
-        notifyError("Reciever data not found");
+        notifyError("Receiver data not found");
         return;
       }
       const { callerId, receiverId, callType } = callLogsData;
       const response = await axios.post(
         "https://audio-video-calling-app-tz0q.onrender.com/call/callhistories/call-logs",
-        {
-          callerId,
-          receiverId,
-          callType,
-        }
+        { callerId, receiverId, callType }
       );
       setCallId(response.data.call._id);
     } catch (error) {
-      console.log(
-        `Error creating call: ${error.response?.data?.error || error.message}`
-      );
+      console.log(`Error creating call: ${error.response?.data?.error || error.message}`);
     }
   };
 
   const updateCallLogs = async () => {
     try {
-      // console.log("status:", callStatus);
-      // console.log("callId:", callId);
-      if (!callId && !callStatus) {
-        console.log("data not found");
+      if (!callId || !callStatus) {
+        console.log("Data not found for updating call logs");
         return;
       }
-      const response = await axios.patch(
+      await axios.patch(
         "https://audio-video-calling-app-tz0q.onrender.com/call/update-call-logs",
-        {
-          id: callId,
-          status: callStatus,
-          endedAt: callEndAt,
-        }
+        { id: callId, status: callStatus, endedAt: callEndAt }
       );
-
     } catch (error) {
-      console.log(
-        `Error updating call: ${error.response?.data?.error || error.message}`
-      );
+      console.log(`Error updating call: ${error.response?.data?.error || error.message}`);
     }
   };
+
   useEffect(() => {
     if (callStatus && callId && callEndAt) updateCallLogs();
   }, [callStatus, callId, callEndAt]);
@@ -480,7 +423,7 @@ const CallContext = ({ children }) => {
         setMinimize,
         onCallClose,
         setOnCallClose,
-        recipientUser
+        recipientUser,
       }}
     >
       {children}

@@ -21,7 +21,7 @@ import { CallLogsContext } from "./contexts/CallLogsContext";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId="YOUR-CLIENT-ID">
+    <GoogleOAuthProvider clientId="219062641866-mk68f9hkadpqkdldftvumkb3cqaenrp5.apps.googleusercontent.com">
       <ToastService>
         <AuthProvider>
           <ChatContext>
