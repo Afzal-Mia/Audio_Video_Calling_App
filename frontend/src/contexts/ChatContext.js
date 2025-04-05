@@ -4,15 +4,16 @@ import React, {
   useMemo,
   useEffect,
   useState,
+  useCallback,
 } from "react";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-//imports contexts
+// Contexts
 import { useToast } from "./ToastContext";
 import { useAuth } from "./AuthContext";
 
-//socket
+// Socket
 const chatContext = createContext(null);
 let socket;
 const getSocket = () => {
@@ -23,28 +24,22 @@ const getSocket = () => {
 };
 
 const ChatContext = ({ children }) => {
-  //context
   const { isAuthenticated, user } = useAuth();
   const { notifySuccess, notifyError, notifyWarning } = useToast();
 
-  //creating memo
   const socket = useMemo(() => getSocket(), []);
 
-  //states
   const [messages, setMessages] = useState([]);
   const [chatList, setChatList] = useState([]);
   const [activeUsers, setActiveUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState({});
-
   const [selectedChatUserId, setSelectedChatUserId] = useState("");
   const [totalUnseenMsgCount, setTotalUnseenMsgCount] = useState(0);
   const [currentUserId, setCurrentUserId] = useState();
-
   const [selectedFilePrev, setSelectedFilePrev] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [productUrl, setProductUrl] = useState(null);
   const [chatId, setChatId] = useState(null);
-
   const [isRequesting, setIsRequesting] = useState(false);
   const [isCallbackRequest, setIsCallBackRequest] = useState(false);
   const [isUserBlocked, setIsUserBlocked] = useState(false);
@@ -53,7 +48,7 @@ const ChatContext = ({ children }) => {
   const [isChatListLoading, setIsChatListLoading] = useState(true);
   const [isMessageSent, setIsMessageSent] = useState(false);
 
-  const sendMessage = async (peerId, message, fileUrl, productUrl) => {
+  const sendMessage = (peerId, message, fileUrl, productUrl) => {
     if (socket) {
       socket.emit("privateMessage", {
         senderId: user.userId,
@@ -65,14 +60,13 @@ const ChatContext = ({ children }) => {
     }
   };
 
-  const fetchChatsLists = async () => {
+  const fetchChatsLists = useCallback(async () => {
     if (user.userId) {
       try {
         const response = await fetch(
           `https://audio-video-calling-app-tz0q.onrender.com/users/chatlists/chat-list/${user.userId}`
         );
         const data = await response.json();
-
         setIsChatListLoading(false);
         setChatList(data.userDetails);
         setTotalUnseenMsgCount(data.totalUnseenCount);
@@ -81,13 +75,14 @@ const ChatContext = ({ children }) => {
         setIsChatListLoading(false);
       }
     }
-  };
+  }, [user.userId, notifyError]);
 
-  const markMessagesAsSeen = async (chatId) => {
+  const markMessagesAsSeen = useCallback(async (chatId) => {
     try {
-      await axios.put(`https://audio-video-calling-app-tz0q.onrender.com/users/chats/mark-seen/${chatId}`, {
-        currentUserId,
-      });
+      await axios.put(
+        `https://audio-video-calling-app-tz0q.onrender.com/users/chats/mark-seen/${chatId}`,
+        { currentUserId }
+      );
 
       setChatList((prevList) => {
         let unseenMessagesCountToSubtract = 0;
@@ -110,40 +105,34 @@ const ChatContext = ({ children }) => {
     } catch (error) {
       console.error("Error marking messages as seen:", error);
     }
-  };
+  }, [currentUserId, selectedChatUserId]);
 
-  const fetchChatMessages = async (peerId) => {
+  const fetchChatMessages = useCallback(async (peerId) => {
     if (peerId) {
       try {
         const response = await fetch(
           `https://audio-video-calling-app-tz0q.onrender.com/users/chats/${user.userId}/${peerId}`
         );
         if (!response.ok) throw new Error("Failed to fetch messages");
-
         const chat = await response.json();
         setChatId(chat.chat ? chat.chat._id : null);
         setMessages(chat.messages || []);
-      } catch (err) {
-        // notifyError('Error fetching chats:' + err)
+      } catch {
         setMessages([]);
       }
     }
-  };
+  }, [user.userId]);
 
   const deleteMessage = async (messageId, senderId) => {
     if (messageId && senderId) {
       try {
         const response = await fetch(
           `https://audio-video-calling-app-tz0q.onrender.com/users/chats/delete-message/${messageId}?senderId=${senderId}`,
-          {
-            method: "DELETE",
-          }
+          { method: "DELETE" }
         );
         const data = await response.json();
         if (response.ok) {
-          setMessages((prevMessages) =>
-            prevMessages.filter((msg) => msg._id !== messageId)
-          );
+          setMessages((prev) => prev.filter((msg) => msg._id !== messageId));
           notifyWarning(data.message);
         }
       } catch (error) {
@@ -151,21 +140,18 @@ const ChatContext = ({ children }) => {
       }
     }
   };
+
   const deleteChat = async () => {
     if (selectedChatUserId && currentUserId && chatId) {
-      const userId = currentUserId;
       try {
         const response = await fetch(
           `https://audio-video-calling-app-tz0q.onrender.com/users/chats/delete-chat/${chatId}`,
           {
             method: "DELETE",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ userId }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: currentUserId }),
           }
         );
-
         if (response.ok) {
           const result = await response.json();
           fetchChatMessages(selectedChatUserId);
@@ -177,42 +163,10 @@ const ChatContext = ({ children }) => {
     }
   };
 
-  const blockUser = async () => {
-    const userId = user.userId;
-    if (selectedChatUserId) {
-      try {
-        const response = await fetch(
-          `https://audio-video-calling-app-tz0q.onrender.com/users/auth/block-user/${userId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ blockedUserId: selectedChatUserId }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to block/unblock user");
-        }
-
-        const data = await response.json();
-        // notifySuccess(data.message);
-        if (socket) {
-          socket.emit("blocked", { selectedChatUserId });
-        }
-        const userBlockedList = await fetchBlockedUsers(userId);
-        setIsblockedByMe(userBlockedList.includes(selectedChatUserId));
-      } catch (error) {
-        notifyError("Error:" + error);
-      }
-    }
-  };
-
-  const fetchBlockedUsers = async (userId) => {
+  const fetchBlockedUsers = useCallback(async (userId) => {
     if (!userId) {
       notifyError("User Id not found");
-      return;
+      return [];
     }
     try {
       const response = await fetch(
@@ -225,13 +179,39 @@ const ChatContext = ({ children }) => {
       notifyError("Error fetching blocked users:" + error);
       return [];
     }
+  }, [notifyError]);
+
+  const blockUser = async () => {
+    if (selectedChatUserId) {
+      try {
+        const response = await fetch(
+          `https://audio-video-calling-app-tz0q.onrender.com/users/auth/block-user/${user.userId}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ blockedUserId: selectedChatUserId }),
+          }
+        );
+
+        if (!response.ok) throw new Error("Failed to block/unblock user");
+
+        if (socket) {
+          socket.emit("blocked", { selectedChatUserId });
+        }
+        const userBlockedList = await fetchBlockedUsers(user.userId);
+        setIsblockedByMe(userBlockedList.includes(selectedChatUserId));
+      } catch (error) {
+        notifyError("Error:" + error);
+      }
+    }
   };
+
   const sendCallbackRequest = async () => {
     const sendData = {
       buyerName: user.name,
       buyerEmail: user.email,
       buyerPhoneNumber: user.phoneNumber,
-      currentUserId: currentUserId,
+      currentUserId,
       profile: user.profile,
       sellerEmail: selectedUser.email,
       sellerUserId: selectedChatUserId,
@@ -243,9 +223,7 @@ const ChatContext = ({ children }) => {
           "https://audio-video-calling-app-tz0q.onrender.com/users/send-call-back-request",
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify(sendData),
           }
         );
@@ -253,8 +231,10 @@ const ChatContext = ({ children }) => {
         if (response.ok) {
           notifySuccess(data.message);
           if (socket) {
-            const name = selectedUser.name;
-            socket.emit("sendNotification", { selectedChatUserId, name });
+            socket.emit("sendNotification", {
+              selectedChatUserId,
+              name: selectedUser.name,
+            });
           }
           setIsRequesting(false);
           setIsCallBackRequest(false);
@@ -272,9 +252,8 @@ const ChatContext = ({ children }) => {
     }
   };
 
-  //useEffects
   useEffect(() => {
-    if (!socket) return console.log("error in socket");
+    if (!socket) return;
     const notifyBlockedUser = async () => {
       if (selectedChatUserId) {
         const selectedUserBlockedList = await fetchBlockedUsers(
@@ -287,7 +266,7 @@ const ChatContext = ({ children }) => {
     return () => {
       socket.off("notifyBlocked", notifyBlockedUser);
     };
-  }, [socket, selectedChatUserId, currentUserId]);
+  }, [socket, selectedChatUserId, currentUserId, fetchBlockedUsers]);
 
   useEffect(() => {
     const fetchBlockedStatus = async () => {
@@ -300,13 +279,12 @@ const ChatContext = ({ children }) => {
         setIsUserBlocked(selectedUserBlockedList.includes(currentUserId));
       }
     };
-
     fetchBlockedStatus();
-  }, [currentUserId, selectedChatUserId]);
+  }, [currentUserId, selectedChatUserId, fetchBlockedUsers]);
 
   useEffect(() => {
     if (currentUserId) fetchChatsLists();
-  }, [currentUserId]);
+  }, [currentUserId, fetchChatsLists]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -319,11 +297,7 @@ const ChatContext = ({ children }) => {
   }, [isAuthenticated, user, socket]);
 
   useEffect(() => {
-    if (!socket) {
-      console.error("Socket not connected");
-      return;
-    }
-
+    if (!socket) return;
     const handleActiveUsers = (users) => {
       setActiveUsers(users);
     };
@@ -331,13 +305,10 @@ const ChatContext = ({ children }) => {
     return () => {
       socket.off("updateActiveUsers", handleActiveUsers);
     };
-  }, [socket, user]);
+  }, [socket]);
 
   useEffect(() => {
-    if (!socket) {
-      console.error("Socket not connected");
-      return;
-    }
+    if (!socket) return;
 
     const handleMessageReceived = ({
       senderId,
@@ -374,7 +345,15 @@ const ChatContext = ({ children }) => {
     return () => {
       socket.off("messageReceived", handleMessageReceived);
     };
-  }, [socket, currentUserId, selectedChatUserId, isChatOpen]);
+  }, [
+    socket,
+    currentUserId,
+    selectedChatUserId,
+    isChatOpen,
+    fetchChatMessages,
+    fetchChatsLists,
+    notifySuccess,
+  ]);
 
   return (
     <chatContext.Provider

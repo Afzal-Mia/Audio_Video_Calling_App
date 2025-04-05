@@ -64,7 +64,6 @@ const Chat = () => {
     chatId,
     markMessagesAsSeen,
     activeUsers,
-    isMessageSent,
   } = useChat();
 
   //states
@@ -103,32 +102,32 @@ const Chat = () => {
   useEffect(() => {
     setIsChatlistActive(true);
     return () => {
-      setSelectedChatUserId(null);
+      setSelectedChatUserId(null); // ⚠️ setSelectedChatUserId should be in deps
     };
-  }, []);
-
+  }, [setSelectedChatUserId]); // ✅ Added missing dep
+  
   useEffect(() => {
-    if (currentUserId) fetchChatsLists();
-  }, [currentUserId]);
-
+    if (currentUserId) fetchChatsLists(); // ⚠️ fetchChatsLists should be in deps
+  }, [currentUserId, fetchChatsLists]); // ✅ Added missing dep
+  
   useEffect(() => {
     if (selectedChatUserId) {
-      fetchChatMessages(selectedChatUserId);
+      fetchChatMessages(selectedChatUserId); // ⚠️ fetchChatMessages should be in deps
     }
-  }, [selectedChatUserId]);
-
+  }, [selectedChatUserId, fetchChatMessages]); // ✅ Added missing dep
+  
   useEffect(() => {
     if (selectedChatUserId && chatId) {
-      markMessagesAsSeen(chatId);
+      markMessagesAsSeen(chatId); // ⚠️ markMessagesAsSeen should be in deps
     }
-  }, [selectedChatUserId, chatId]);
-
+  }, [selectedChatUserId, chatId, markMessagesAsSeen]); // ✅ Added missing dep
+  
   useEffect(() => {
     if (chatBoxRef.current) {
       chatBoxRef.current.scrollTop = chatBoxRef.current.scrollHeight;
     }
   }, [messages]);
-
+  
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -139,14 +138,14 @@ const Chat = () => {
       ) {
         setShowFileOptions(false);
       }
-
+  
       if (activeMessageId !== null) {
         const currentMessageRef = messageRefs.current[activeMessageId];
         if (currentMessageRef && !currentMessageRef.contains(event.target)) {
           setActiveMessageId(null);
         }
       }
-
+  
       if (
         chatoptionRef.current &&
         !chatoptionRef.current.contains(event.target) &&
@@ -155,19 +154,19 @@ const Chat = () => {
       ) {
         setIsOpenChatOptions(false);
       }
-
+  
       if (userInfoRef.current && !userInfoRef.current.contains(event.target)) {
         setIsUserProfileOpen(false);
       }
     };
-
+  
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [activeMessageId]);
-
-  // Close when clicking outside
+  }, [activeMessageId]); // ✅ activeMessageId used inside
+  
+  // Add New Contact Click Outside Close
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -179,12 +178,13 @@ const Chat = () => {
         setIsAddNewContactVisible(false);
       }
     };
-
+  
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+  
 
   //functions
   const handleSendMessage = async () => {
@@ -370,11 +370,11 @@ const Chat = () => {
       );
 
       if (!response.ok) {
-        const error = await response.json();
+        // const error = await response.json();
         setErrors({ email: "Failed to save chat list." });
       }
 
-      const data = await response.json();
+      // const data = await response.json();
       // console.log("Chat list saved:", data);
       setIsNewContact(false);
       setAddEmail("");
@@ -492,6 +492,9 @@ const Chat = () => {
       </>
     );
   };
+
+
+  // first
 
   const getFormattedDate = (date) => {
     const messageDate = new Date(date);
@@ -650,6 +653,7 @@ const Chat = () => {
     });
   };
 
+  // second
   const renderIfChatNotOpen = () => {
     return (
       <div className="chat-not-selected-wrapper">
