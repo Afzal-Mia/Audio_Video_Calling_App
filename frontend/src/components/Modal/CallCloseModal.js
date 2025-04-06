@@ -15,7 +15,7 @@ const CallCloseModal = () => {
   return (
     <div className="Call-Close-modal-container">
         <div className="call-close-info-wrapper">
-            <span style={{color:'white',fontSize:'24px',fontWeight:'bold'}}>GChat</span>
+            <span style={{color:'white',fontSize:'24px',fontWeight:'bold'}}>ChatNest</span>
             <span style={{color:'white'}}>Are sure you want to end the current call?</span>
         </div>
       <div className="incoming-call-btn-container">

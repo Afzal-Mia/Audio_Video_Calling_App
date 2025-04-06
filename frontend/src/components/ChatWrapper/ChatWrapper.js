@@ -87,7 +87,7 @@ const ChatWrapper = () => {
           <img src={logo} alt="logo" className="gchat-logo" />
         </div>
         <div className="gchat-title-wrapper">
-          <span className="gchat-title">GChat</span>
+          <span className="gchat-title">ChatNest</span>
         </div>
       </div>
       <div className="sidebar-and-content-wrapper">

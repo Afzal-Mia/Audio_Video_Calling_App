@@ -92,7 +92,7 @@ function SignIn() {
                         />
                     </div>
                     <div className='new-acc-wrapper'>
-                        <span className='newtogchat'>New to GChat?</span>
+                        <span className='newtogchat'>New to ChatNest?</span>
                         <Link className='create-acc-link' to='/sign-up'>Create an account</Link>
                     </div>
                 </form>

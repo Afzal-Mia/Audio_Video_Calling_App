@@ -29,7 +29,6 @@ const AcceptCallModal = () => {
       console.error("callType is not defined in callerDetails:", callerDetails);
     }
   };
-
   return (
     <div className="AcceptCall-modal-container">
       <div className="caller-info-wrapper">

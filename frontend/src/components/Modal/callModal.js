@@ -98,7 +98,7 @@ const Modal = React.memo(() => {
               loading="lazy"
               className="call-app-logo"
             />
-            <span className="call-app-name">GChat</span>
+            <span className="call-app-name">ChatNest</span>
           </div>
         )}
         <div className="call-modal-closer" style={{ cursor: "pointer" }}>

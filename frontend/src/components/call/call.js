@@ -328,7 +328,7 @@ const Call = () => {
           <span
             style={{ color: "white", fontSize: "24px", fontWeight: "bold" }}
           >
-            GChat
+            ChatNest
           </span>
           <span style={{ color: "white" }}>
             Are sure you want to delete all call histories?

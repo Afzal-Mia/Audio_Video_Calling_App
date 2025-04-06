@@ -88,7 +88,7 @@ const sendOTP = (userName,userEmail,otp)  => {
       </div>
       <div class="footer">
           <p>If you didn't request this, please ignore this email or contact support.</p>
-          <p>&copy; 2025 Gchat . All rights reserved.</p>
+          <p>&copy; 2025 ChatNest . All rights reserved.</p>
       </div>
   </div>
 </body>
