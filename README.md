@@ -1,6 +1,6 @@
-# GChat - WhatsApp Clone using MERN Stack
+# ChatNest - Audio/Video Calling using MERN Stack
 
-GChat is a real-time chat application built using the MERN stack (MongoDB, Express, React, Node.js) with additional support for audio and video calling. This app allows users to sign up and log in using their email addresses, instead of phone numbers, and engage in real-time messaging and calling.
+ChatNest is a real-time chat application built using the MERN stack (MongoDB, Express, React, Node.js) with additional support for audio and video calling. This app allows users to sign up and log in using their email addresses, instead of phone numbers, and engage in real-time messaging and calling.
 
 ## Features
 - **Email-based Authentication:** Users can sign up or log in using their email and password.
@@ -20,7 +20,7 @@ GChat is a real-time chat application built using the MERN stack (MongoDB, Expre
 
 ## Prerequisites
 Before you begin, make sure you have the following installed:
-- Node.js (v14 or higher)
+- Node.js
 - MongoDB (or use MongoDB Atlas for cloud database)
 
 ## Installation
@@ -28,7 +28,7 @@ Before you begin, make sure you have the following installed:
 ### 1. Clone the repository
 
 ```bash
- git clone https://github.com/your-username/GChat.git
+ git https://github.com/Afzal-Mia/Audio_Video_Calling_App.git
 ```
 
 ### 2. Install Backend Dependencies
@@ -71,27 +71,12 @@ The app should now be running on http://localhost:3000.
 ## Screenshots
 Here are some screenshots of the app:
 
-### 1. Login Screen
-![Screenshot 2025-01-13 222546](https://github.com/user-attachments/assets/cde14627-2828-4edd-a8d4-194bb1f94477)
-
-### 2. Chat Screen
-![Screenshot 2025-01-13 210612](https://github.com/user-attachments/assets/0c56665a-160e-4df3-bda3-f7e667d45eb6)
-
-### 3. Audio/Video Call Screen
-![Screenshot 2025-01-13 210650](https://github.com/user-attachments/assets/ebf0f86d-7a15-4605-9d20-ba6bb355ab8d)
-
-![Screenshot 2025-01-13 210428](https://github.com/user-attachments/assets/2bcc2708-1088-4623-be51-86d8eeb0f33a)
-
-### 4. Call History
-![Screenshot 2025-01-13 210838](https://github.com/user-attachments/assets/bf51e7b2-5faa-4638-9e7c-7e3c1509c7df)
-
-![Screenshot 2025-01-13 210759](https://github.com/user-attachments/assets/12f2316b-ca9e-4458-8b4a-f785ea3b91b1)
-
-### 5. Mobile View
-
-![Screenshot 2025-01-13 223740](https://github.com/user-attachments/assets/f015be45-febc-4752-b773-2fb1c3994bd1)
-
-![Screenshot 2025-01-13 223818](https://github.com/user-attachments/assets/ea7e5515-4828-4dd0-93ac-8673c52295bf)
-
-![Screenshot 2025-01-13 223839](https://github.com/user-attachments/assets/bc1ed290-ab2a-4a85-a446-1aeefb48e79d)
+* **Login Screen:**
+    ![Login Screen](frontend/public/v1.jpeg)
+* **Chat Screen:**
+    ![Chat Screen](frontend/public/v2.jpeg)
+* **Video Calling Screen:**
+    ![Video Calling Screen](frontend/public/v3.jpeg)
+    ![Video Calling Screen](frontend/public/v4.jpeg)
+    
 
