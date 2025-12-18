@@ -75,8 +75,6 @@ Here are some screenshots of the app:
     ![Login Screen](frontend/public/v1.jpeg)
 * **Chat Screen:**
     ![Chat Screen](frontend/public/v2.jpeg)
-* **Video Calling Screen:**
-    ![Video Calling Screen](frontend/public/v3.jpeg)
-    ![Video Calling Screen](frontend/public/v4.jpeg)
+
     
 
